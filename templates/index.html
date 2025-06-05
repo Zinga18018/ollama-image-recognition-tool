@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Image Recognition with Ollama</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f8f9fa;
+            padding-top: 40px;
+            padding-bottom: 40px;
+        }
+        .container {
+            max-width: 700px;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .upload-form {
+            margin-bottom: 30px;
+        }
+        .image-preview img {
+            max-width: 100%;
+            max-height: 300px;
+            margin-top: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 5px;
+        }
+        .description-box {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            white-space: pre-wrap; /* Preserve line breaks */
+        }
+        .error-message {
+            color: red;
+            margin-top: 10px;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center mb-4">Image Recognition with Ollama (LLaVA)</h2>
+        
+        <form method=post enctype=multipart/form-data class="upload-form">
+            <div class="form-group">
+                <label for="file">Upload an image:</label>
+                <input type=file name=file class="form-control-file" id="file" accept=".png, .jpg, .jpeg, .gif">
+            </div>
+            <button type=submit class="btn btn-primary btn-block">Get Description</button>
+        </form>
+
+        {% if error %}
+            <div class="alert alert-danger error-message" role="alert">
+                <strong>Error:</strong> {{ error }}
+            </div>
+        {% endif %}
+
+        {% if filename and description %}
+            <div class="text-center image-preview">
+                <h4>Uploaded Image:</h4>
+                <p>{{ filename }}</p>
+                <!-- Note: For security and simplicity, we are not displaying the uploaded image directly from the 'uploads' folder on the web page.
+                     A more robust solution might serve images from a dedicated static folder or use a temporary URL. -->
+            </div>
+            <div class="description-box">
+                <h4>Image Description:</h4>
+                <p>{{ description }}</p>
+            </div>
+        {% elif filename and not description and not error %}
+             <div class="alert alert-warning" role="alert">
+                Processing your image... If this takes too long, please check the Ollama server.
+            </div>
+        {% endif %}
+
+        <div class="footer">
+            <p>Ensure Ollama is running and the 'llava' model is available.</p>
+            <p>Run <code>ollama serve</code> and <code>ollama pull llava</code> if needed.</p>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
