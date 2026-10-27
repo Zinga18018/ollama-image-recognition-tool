@@ -1,75 +1,42 @@
 # Image Recognition with Ollama (LLaVA)
 
-This is a simple Flask web application that allows users to upload an image and get a description of it using a locally running Ollama instance with a multimodal model like LLaVA.
+A Flask upload form that asks Ollama's `llava` model to describe an image. [app.py](app.py) saves the upload temporarily, sends its base64-encoded bytes to Ollama and renders the returned text. The page displays the filename and description, not an image preview.
 
 ## Prerequisites
 
-1.  **Python 3.7+**
-2.  **Ollama Installed:** Download and install Ollama from [https://ollama.com/](https://ollama.com/).
-3.  **Multimodal Model Pulled:** You need a multimodal model compatible with Ollama. This application is configured to use `llava` by default.
-    *   Open your terminal and run: `ollama pull llava`
-    *   If you wish to use a different model, update the `model` parameter in the `ollama.chat` call within `app.py`.
+- Python and a virtual environment compatible with the installed Flask, Ollama Python client and Werkzeug versions. [requirements.txt](requirements.txt) is unpinned; a Python 3.7 compatibility claim is not validated.
+- [Ollama](https://ollama.com/) installed and its service available.
+- The `llava` model available to that service. If needed, download it with `ollama pull llava`; this is a model download, not part of installing the Python requirements.
+
+The code calls `ollama.chat(model='llava', ...)`. Using another model requires a code change. Verify that the client's configured Ollama endpoint is the intended local service before uploading an image.
 
 ## Setup
 
-1.  **Clone the repository (or download the files):**
-    ```bash
-    # If this were a git repo, you'd clone it.
-    # For now, ensure you have app.py, requirements.txt, and the templates/index.html file.
-    ```
-
-2.  **Create a virtual environment (recommended):**
-    ```bash
-    python -m venv venv
-    ```
-    Activate it:
-    *   Windows: `venv\Scripts\activate`
-    *   macOS/Linux: `source venv/bin/activate`
-
-3.  **Install dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4.  **Ensure Ollama Server is Running:**
-    Open a new terminal window/tab and start the Ollama server if it's not already running:
-    ```bash
-    ollama serve
-    ```
-    Keep this terminal window open while the application is running.
-
-## Running the Application
-
-1.  **Navigate to the project directory** in your terminal (where `app.py` is located).
-
-2.  **Run the Flask application:**
-    ```bash
-    python app.py
-    ```
-
-3.  **Open your web browser** and go to: `http://127.0.0.1:5000/` or `http://localhost:5000/`
-
-## How to Use
-
-1.  Click on "Choose File" or "Browse" to select an image from your computer (supports .png, .jpg, .jpeg, .gif).
-2.  Click the "Get Description" button.
-3.  The application will upload the image, send it to your local Ollama instance, and display the description provided by the LLaVA model.
-
-## Project Structure
-
-```
-Image_Recognition/
-├── app.py              # Main Flask application
-├── requirements.txt    # Python dependencies
-├── templates/
-│   └── index.html      # HTML template for the web page
-├── uploads/            # Directory for temporary image uploads (created automatically)
-└── README.md           # This file
+```bash
+git clone https://github.com/Zinga18018/ollama-image-recognition-tool.git
+cd ollama-image-recognition-tool
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
 ```
 
-## Notes
+For Windows PowerShell, replace the activation line with `.\.venv\Scripts\Activate.ps1`.
 
-*   The `uploads` directory is created automatically by `app.py` to temporarily store uploaded images. These images are deleted after processing.
-*   The application uses base64 encoding to send the image data to Ollama. This is a common way to handle image data in API requests.
-*   Error handling is basic. If Ollama is not running or the model is not available, an error message will be displayed.
-*   The maximum upload size is set to 16MB in `app.py`.
+If Ollama is not already running, start `ollama serve` in another terminal. Then use the [Flask development CLI](https://flask.palletsprojects.com/en/stable/cli/) on loopback, with the debugger and reloader disabled:
+
+```bash
+python -m flask --app app run --host 127.0.0.1 --port 5000 --no-debugger --no-reload
+```
+
+Open `http://127.0.0.1:5000/`, choose a PNG, JPG/JPEG or GIF and click **Get Description**. If the service or model is unavailable, the app displays an error. Setup, service/model calls and browser flows were not rerun for this documentation update.
+
+## Storage, safety and limits
+
+- `python app.py` instead starts debug mode on `0.0.0.0`. Do not expose that entry point to a network. The application has no authentication; even the loopback development command is not a production deployment.
+- Uploads are limited to 16 MiB. File checks use the filename extension, not decoded-image validation.
+- The app creates `uploads/` in its working directory. It attempts deletion after success or a caught error, but a process crash can leave files behind. Repeated/concurrent uploads with the same sanitized filename can collide.
+- [templates/index.html](templates/index.html) loads frontend assets from external CDNs. Local model inference does not make the whole browser session offline.
+- Descriptions can be inaccurate or omit details. No caption-quality evaluation, performance benchmark or automated test suite is committed.
+
+Use non-sensitive images with appropriate permissions. Public deployment, stronger file handling and resource limits require separate code work.
+
